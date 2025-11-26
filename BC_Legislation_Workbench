@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BC Legislation Workbench</title>
+  <style>
+    /*
+      This stylesheet provides the visual foundation for the BC Legislation
+      Workbench. Colours are chosen to balance contrast and readability
+      while maintaining a modern, neutral palette. Layout rules ensure
+      responsiveness across desktop and tablet devices. Comments are left
+      throughout to aid future maintainers in understanding the intent
+      behind key decisions.
+    */
+
+    :root {
+      --bg-header: #111827;
+      --bg-sidebar: #0c1a2b;
+      --bg-main: #f3f4f6;
+      --bg-card: #ffffff;
+      --bg-tab: #e5e7eb;
+      --bg-tab-active: #ffffff;
+      --bg-error: #ffecec;
+      --bg-error-border: #f44336;
+      --bg-footer: #f9fafb;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --text-inverse: #e5e7eb;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --border-soft: #d1d5db;
+      --radius: 6px;
+      --radius-lg: 10px;
+      --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.1);
+      --shadow-medium: 0 4px 10px rgba(0, 0, 0, 0.12);
+      --font-family: system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-family);
+      color: var(--text-main);
+      background: var(--bg-sidebar);
+    }
+
+    #app-root {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header.app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: var(--bg-header);
+      color: var(--text-inverse);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.5);
+      gap: 16px;
+    }
+
+    .branding h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .branding .subtitle {
+      margin: 4px 0 0;
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8rem;
+    }
+
+    .form-row label {
+      color: #d1d5db;
+    }
+
+    .form-row input,
+    .form-row select {
+      font: inherit;
+      padding: 4px 8px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      background: #1f2937;
+      color: #f3f4f6;
+      min-width: 120px;
+    }
+
+    .form-row input::placeholder {
+      color: #6b7280;
+    }
+
+    button {
+      font: inherit;
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: var(--shadow-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    button.secondary {
+      background: #111827;
+      border: 1px solid #374151;
+      color: #e5e7eb;
+      box-shadow: none;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    main.app-main {
+      flex: 1;
+      display: flex;
+      background: var(--bg-sidebar);
+      min-height: 0;
+    }
+
+    aside.sidebar {
+      width: 280px;
+      max-width: 100%;
+      background: var(--bg-sidebar);
+      color: var(--text-inverse);
+      border-right: 1px solid #1e293b;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .sidebar-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .sidebar-header h2 {
+      margin: 0;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #9ca3af;
+    }
+
+    .sidebar-header p {
+      margin: 4px 0 0;
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    .content-tree {
+      flex: 1;
+      overflow: auto;
+      padding: 8px 0 12px;
+      font-size: 0.85rem;
+    }
+
+    ul.tree-root,
+    ul.tree-children {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .tree-node-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 12px;
+      cursor: pointer;
+      border-radius: 0 999px 999px 0;
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+
+    .tree-node-row:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .tree-node.selected .tree-node-row {
+      background: rgba(37, 99, 235, 0.9);
+      color: #f3f4f6;
+    }
+
+    .tree-icon {
+      font-size: 0.85rem;
+      width: 1.1em;
+      text-align: center;
+    }
+
+    .tree-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .index-badge {
+      margin-left: auto;
+      padding: 0 6px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      color: #e5e7eb;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      border: 2px solid rgba(148, 163, 184, 0.5);
+      border-top-color: #e5e7eb;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Main pane styling */
+    section.main-pane {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 14px 6px;
+      gap: 8px;
+      background: var(--bg-main);
+    }
+
+    .breadcrumb {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 2px 4px 4px;
+    }
+
+    .error-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius);
+      background: var(--bg-error);
+      color: #b71c1c;
+      border: 1px solid var(--bg-error-border);
+      font-size: 0.85rem;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .error-banner.visible {
+      display: flex;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border-soft);
+      flex-wrap: wrap;
+    }
+
+    .tab-button {
+      background: var(--bg-tab);
+      color: var(--text-muted);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 6px 10px;
+      border-bottom: 1px solid transparent;
+      box-shadow: none;
+      font-size: 0.85rem;
+    }
+
+    .tab-button.active {
+      background: var(--bg-tab-active);
+      color: var(--text-main);
+      border-bottom-color: var(--bg-tab-active);
+      font-weight: 500;
+    }
+
+    .tab-panel {
+      display: none;
+      background: var(--bg-tab-active);
+      border-radius: 0 var(--radius-lg) var(--radius-lg) var(--radius-lg);
+      box-shadow: var(--shadow-medium);
+      padding: 10px 12px;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .tab-panel.active {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Browse / Read (Document) tab */
+    .document-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      border-bottom: 1px solid var(--border-soft);
+      padding-bottom: 6px;
+    }
+
+    .document-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .document-body {
+      flex: 1;
+      overflow: auto;
+      margin-top: 6px;
+      padding: 8px 10px;
+      background: #ffffff;
+      border-radius: var(--radius);
+      border: 1px solid #e5e7eb;
+      position: relative;
+    }
+
+    .code-inline {
+      display: block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+      font-size: 0.75rem;
+      background: #f3f4f6;
+      border-radius: var(--radius);
+      padding: 4px 6px;
+      color: #4b5563;
+      overflow-x: auto;
+    }
+
+    /* Search tab */
+    .search-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+      font-size: 0.8rem;
+      align-items: flex-end;
+    }
+
+    .search-controls .form-row input,
+    .search-controls .form-row select {
+      background: #ffffff;
+      color: var(--text-main);
+      border-color: var(--border-soft);
+    }
+
+    .search-results {
+      flex: 1;
+      overflow: auto;
+      padding-top: 4px;
+      border-top: 1px dashed var(--border-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .search-result-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid #e5e7eb;
+    }
+
+    .search-result-card h3 {
+      margin: 0 0 2px;
+      font-size: 0.95rem;
+    }
+
+    .search-result-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .fragments {
+      font-size: 0.8rem;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+
+    .fragment {
+      padding: 3px 6px;
+      border-radius: var(--radius);
+      background: var(--accent-soft);
+      margin-bottom: 2px;
+      overflow-x: auto;
+      white-space: normal;
+    }
+
+    /* Tags & Excerpts tab */
+    .tags-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .tags-table th,
+    .tags-table td {
+      padding: 6px 8px;
+      border: 1px solid #e5e7eb;
+      text-align: left;
+      font-size: 0.8rem;
+    }
+
+    .tags-table th {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+
+    .tag-filter {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .export-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    /* Notes tab */
+    .notes-area {
+      flex: 1;
+      border: 1px solid #e5e7eb;
+      border-radius: var(--radius);
+      padding: 8px;
+      background: #ffffff;
+      resize: vertical;
+    }
+
+    /* AI tab */
+    .assistant-chat {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: var(--radius);
+      padding: 8px;
+    }
+
+    .chat-message {
+      padding: 6px 8px;
+      border-radius: var(--radius);
+      max-width: 80%;
+    }
+
+    .chat-message.user {
+      align-self: flex-end;
+      background: #dbeafe;
+    }
+
+    .chat-message.assistant {
+      align-self: flex-start;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+    }
+
+    /* Footer */
+    footer.app-footer {
+      padding: 6px 12px 10px;
+      background: var(--bg-footer);
+      border-top: 1px solid #e5e7eb;
+    }
+
+    footer.app-footer p {
+      margin: 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    /* Modal styling */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal {
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+      max-width: 540px;
+      width: 90%;
+      padding: 16px 18px 14px;
+      position: relative;
+    }
+
+    .modal h2 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+    }
+
+    .modal p {
+      font-size: 0.85rem;
+      color: #374151;
+      margin: 4px 0;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      background: transparent;
+      border: none;
+      font-size: 1.1rem;
+      cursor: pointer;
+      color: #6b7280;
+    }
+
+    .modal-close:hover {
+      color: #111827;
+    }
+
+    .tag-dialog form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .tag-dialog textarea {
+      width: 100%;
+      min-height: 80px;
+      border: 1px solid #d1d5db;
+      border-radius: var(--radius);
+      padding: 6px;
+      resize: vertical;
+    }
+
+    .tag-dialog input {
+      width: 100%;
+      padding: 6px;
+      border: 1px solid #d1d5db;
+      border-radius: var(--radius);
+    }
+
+    .small-button {
+      font-size: 0.75rem;
+      padding: 3px 6px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 960px) {
+      main.app-main {
+        flex-direction: column;
+      }
+      aside.sidebar {
+        width: 100%;
+        max-height: 240px;
+        border-right: none;
+        border-bottom: 1px solid #1e293b;
+      }
+      .content-tree {
+        max-height: 180px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      header.app-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .header-controls {
+        width: 100%;
+      }
+      .header-controls .form-row input,
+      .header-controls .form-row select {
+        width: 100%;
+      }
+      /* technical xml view vertical stacking on narrow screens */
+    }
+  </style>
+</head>
+<body>
+  <div id="app-root">
+    <!-- Header with title, selectors and actions -->
+    <header class="app-header">
+      <div class="branding">
+        <h1>BC Legislation Workbench</h1>
+        <p class="subtitle">Explore, search and collect BC Acts &amp; Regulations</p>
+      </div>
+      <div class="header-controls">
+        <div class="form-row">
+          <label for="aspect-select">Aspect</label>
+          <select id="aspect-select">
+            <option value="complete" selected>complete</option>
+            <option value="coa">coa</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="index-id-input">Index ID</label>
+          <input id="index-id-input" type="text" value="statreg" />
+        </div>
+        <div class="form-row">
+          <label for="openai-key-input">OpenAI Key (optional)</label>
+          <input id="openai-key-input" type="password" placeholder="sk-..." />
+        </div>
+        <button id="about-button" class="secondary" type="button">About / Help</button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <!-- Sidebar for content tree -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>Legislation Files</h2>
+          <p>Browse BC Acts and Regulations</p>
+        </div>
+        <div id="content-tree" class="content-tree">
+          <!-- Tree will be rendered by JS -->
+        </div>
+      </aside>
+
+      <!-- Main pane with tabs -->
+      <section class="main-pane">
+        <div id="error-banner" class="error-banner">
+          <span id="error-message"></span>
+          <button id="error-dismiss" type="button" aria-label="Dismiss error">&times;</button>
+        </div>
+        <div id="breadcrumb" class="breadcrumb"></div>
+        <div class="tabs">
+          <button class="tab-button active" data-tab="browse" type="button">Browse</button>
+          <button class="tab-button" data-tab="search" type="button">Search</button>
+          <button class="tab-button" data-tab="tags" type="button">Tags &amp; Excerpts</button>
+          <button class="tab-button" data-tab="notes" type="button">Notes &amp; Exports</button>
+          <button class="tab-button" data-tab="assistant" type="button">AI Assistant</button>
+          <button class="tab-button" data-tab="technical" type="button">Technical</button>
+        </div>
+        <!-- Browse / Read panel -->
+        <div id="browse-panel" class="tab-panel active" data-tab="browse">
+          <div class="document-header">
+            <div>
+              <h2 id="document-title">No document selected</h2>
+              <p id="document-meta" class="muted small">Select a document to begin.</p>
+              <pre id="document-url" class="code-inline"></pre>
+            </div>
+            <div class="document-actions">
+              <button id="back-button" type="button" disabled>Back</button>
+              <button id="copy-citation-btn" type="button" disabled>Copy Citation</button>
+              <button id="toggle-tag-mode-btn" type="button" disabled>Tag selection</button>
+              <button id="open-xml-btn" type="button" disabled>XML View</button>
+            </div>
+          </div>
+          <div id="document-body" class="document-body">
+            <p class="muted small">Open a document to read its contents here.</p>
+          </div>
+        </div>
+        <!-- Search panel -->
+        <div id="search-panel" class="tab-panel" data-tab="search">
+          <div class="search-controls">
+            <div class="form-row">
+              <label for="search-query">Search keywords</label>
+              <input id="search-query" type="text" placeholder="e.g. evictions supportive housing" />
+            </div>
+            <div class="form-row">
+              <label for="search-type">Type</label>
+              <select id="search-type">
+                <option value="all" selected>All</option>
+                <option value="act">Acts</option>
+                <option value="reg">Regulations</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="search-aspect">Aspect</label>
+              <select id="search-aspect">
+                <option value="complete">complete</option>
+                <option value="coa">coa</option>
+              </select>
+            </div>
+            <button id="search-btn" type="button">Search</button>
+          </div>
+          <div id="search-results" class="search-results">
+            <p class="muted small">Enter a query above to search BC Laws.</p>
+          </div>
+        </div>
+        <!-- Tags & Excerpts panel -->
+        <div id="tags-panel" class="tab-panel" data-tab="tags">
+          <div class="tag-filter">
+            <div class="form-row">
+              <label for="filter-act">Filter by Act</label>
+              <input id="filter-act" type="text" placeholder="Act name" />
+            </div>
+            <div class="form-row">
+              <label for="filter-tag">Filter by Tag</label>
+              <input id="filter-tag" type="text" placeholder="Tag" />
+            </div>
+            <button id="apply-filter-btn" type="button">Apply Filter</button>
+            <button id="clear-filter-btn" type="button">Clear Filter</button>
+          </div>
+          <div style="overflow:auto; flex:1; margin-top:4px;">
+            <table id="tags-table" class="tags-table">
+              <!-- Table body filled by JS -->
+            </table>
+          </div>
+          <div class="export-buttons">
+            <button id="export-csv-btn" type="button" disabled>Export CSV</button>
+            <button id="export-word-btn" type="button" disabled>Export Word</button>
+            <button id="clear-tags-btn" type="button" disabled>Clear All</button>
+          </div>
+        </div>
+        <!-- Notes & Exports panel -->
+        <div id="notes-panel" class="tab-panel" data-tab="notes">
+          <label for="notes-input">Research notes</label>
+          <textarea id="notes-input" class="notes-area" placeholder="Write your notes here..."></textarea>
+          <div class="export-buttons">
+            <button id="download-notes-btn" type="button">Download Notes (.txt)</button>
+            <button id="clear-notes-btn" type="button">Clear Notes</button>
+          </div>
+        </div>
+        <!-- AI Assistant panel -->
+        <div id="assistant-panel" class="tab-panel" data-tab="assistant">
+          <div id="assistant-chat" class="assistant-chat">
+            <p class="muted small">Enter a question below to consult the AI assistant once you provide your OpenAI key.</p>
+          </div>
+          <div style="display:flex; gap:6px; margin-top:6px;">
+            <input id="assistant-input" type="text" placeholder="Ask the AI assistant..." style="flex:1; padding:6px; border-radius: var(--radius); border:1px solid #d1d5db;" />
+            <button id="assistant-send-btn" type="button">Send</button>
+          </div>
+        </div>
+        <!-- Technical panel -->
+        <div id="technical-panel" class="tab-panel" data-tab="technical">
+          <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+            <div>
+              <h3>Document XML</h3>
+              <pre id="technical-xml-url" class="code-inline"></pre>
+              <pre id="technical-xml-content" class="code-inline" style="height:200px; overflow:auto; white-space:pre-wrap;">
+No document selected. Use the XML View button from the browse tab.</pre>
+            </div>
+            <div>
+              <h3>Run XPath (Advanced)</h3>
+              <div style="display:flex; gap:6px;">
+                <input id="xpath-input" type="text" placeholder="//section[@id='s49']" style="flex:1; padding:6px; border-radius: var(--radius); border:1px solid #d1d5db;" />
+                <button id="run-xpath-btn" type="button">Run</button>
+              </div>
+              <pre id="technical-xpath-url" class="code-inline"></pre>
+              <pre id="technical-xpath-result" class="code-inline" style="height:180px; overflow:auto; white-space:pre-wrap;">
+Enter an XPath expression to search within the current document.</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>
+        This is a demo tool for research purposes only. Verify all legal information on the official BC Laws website.
+      </p>
+    </footer>
+  </div>
+
+  <!-- About modal -->
+  <div id="about-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <button type="button" class="modal-close" aria-label="Close">&times;</button>
+      <h2>About this tool</h2>
+      <p>
+        The BC Legislation Workbench helps you explore, search and collect
+        excerpts from BC Acts and Regulations. This tool is for research
+        purposes only and is not an official source of law.
+      </p>
+      <p>
+        Data comes from the public BC Laws CiviX API. You can optionally
+        enable AI-powered assistance by providing your own OpenAI API key.
+        Remember to verify all outputs against the source legislation.
+      </p>
+    </div>
+  </div>
+  <!-- Tag dialog -->
+  <div id="tag-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal tag-dialog" role="dialog" aria-modal="true">
+      <button type="button" class="modal-close" aria-label="Close">&times;</button>
+      <h2>Add a tag</h2>
+      <div id="tag-dialog-info" class="muted small"></div>
+      <form id="tag-form">
+        <div class="form-row">
+          <label for="tag-input">Tags (comma separated)</label>
+          <input id="tag-input" type="text" placeholder="e.g. evictions, supportive housing" />
+        </div>
+        <div class="form-row">
+          <label for="note-input">Note</label>
+          <textarea id="note-input" placeholder="Optional note about this excerpt..."></textarea>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button id="tag-save-btn" type="submit">Save</button>
+          <button id="tag-cancel-btn" type="button" class="secondary">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // State management
+      const State = {
+        aspect: 'complete',
+        indexId: 'statreg',
+        selectedNodeId: null,
+        history: [], // stack of previously viewed documents
+        activeDocumentId: null,
+        activeDocumentMeta: null,
+        activeDocumentHtml: '',
+        contentCache: {}, // aspect -> { nodeIdOrRoot: [ContentNode] }
+        expandedNodes: new Set(),
+        searchResults: [],
+        xmlCache: {},
+        tags: [], // TagRecord[]
+        notes: '',
+        openaiKey: null,
+        ui: {
+          currentTab: 'browse',
+          loading: {
+            content: false,
+            document: false,
+            search: false,
+            xml: false,
+            xpath: false,
+            assistant: false,
+          },
+          error: null,
+          loadingNodeId: null,
+        },
+      };
+
+      // DOM references
+      const dom = {};
+
+      function cacheDom() {
+        dom.aspectSelect = document.getElementById('aspect-select');
+        dom.indexInput = document.getElementById('index-id-input');
+        dom.openaiKeyInput = document.getElementById('openai-key-input');
+        dom.aboutButton = document.getElementById('about-button');
+        dom.aboutModal = document.getElementById('about-modal');
+        dom.tagModal = document.getElementById('tag-modal');
+        dom.tagDialogInfo = document.getElementById('tag-dialog-info');
+        dom.tagForm = document.getElementById('tag-form');
+        dom.tagInput = document.getElementById('tag-input');
+        dom.noteInput = document.getElementById('note-input');
+        dom.tagSaveBtn = document.getElementById('tag-save-btn');
+        dom.tagCancelBtn = document.getElementById('tag-cancel-btn');
+
+        dom.errorBanner = document.getElementById('error-banner');
+        dom.errorMessage = document.getElementById('error-message');
+        dom.errorDismiss = document.getElementById('error-dismiss');
+        dom.breadcrumb = document.getElementById('breadcrumb');
+        dom.contentTree = document.getElementById('content-tree');
+        dom.tabButtons = document.querySelectorAll('.tab-button');
+        dom.tabPanels = document.querySelectorAll('.tab-panel');
+
+        // Browse
+        dom.documentTitle = document.getElementById('document-title');
+        dom.documentMeta = document.getElementById('document-meta');
+        dom.documentUrl = document.getElementById('document-url');
+        dom.documentBody = document.getElementById('document-body');
+        dom.backButton = document.getElementById('back-button');
+        dom.copyCitationBtn = document.getElementById('copy-citation-btn');
+        dom.toggleTagModeBtn = document.getElementById('toggle-tag-mode-btn');
+        dom.openXmlBtn = document.getElementById('open-xml-btn');
+
+        // Search
+        dom.searchQuery = document.getElementById('search-query');
+        dom.searchType = document.getElementById('search-type');
+        dom.searchAspect = document.getElementById('search-aspect');
+        dom.searchBtn = document.getElementById('search-btn');
+        dom.searchResults = document.getElementById('search-results');
+
+        // Tags
+        dom.filterAct = document.getElementById('filter-act');
+        dom.filterTag = document.getElementById('filter-tag');
+        dom.applyFilterBtn = document.getElementById('apply-filter-btn');
+        dom.clearFilterBtn = document.getElementById('clear-filter-btn');
+        dom.tagsTable = document.getElementById('tags-table');
+        dom.exportCsvBtn = document.getElementById('export-csv-btn');
+        dom.exportWordBtn = document.getElementById('export-word-btn');
+        dom.clearTagsBtn = document.getElementById('clear-tags-btn');
+
+        // Notes
+        dom.notesInput = document.getElementById('notes-input');
+        dom.downloadNotesBtn = document.getElementById('download-notes-btn');
+        dom.clearNotesBtn = document.getElementById('clear-notes-btn');
+
+        // Assistant
+        dom.assistantChat = document.getElementById('assistant-chat');
+        dom.assistantInput = document.getElementById('assistant-input');
+        dom.assistantSendBtn = document.getElementById('assistant-send-btn');
+
+        // Technical
+        dom.technicalXmlUrl = document.getElementById('technical-xml-url');
+        dom.technicalXmlContent = document.getElementById('technical-xml-content');
+        dom.technicalXpathUrl = document.getElementById('technical-xpath-url');
+        dom.technicalXpathResult = document.getElementById('technical-xpath-result');
+        dom.xpathInput = document.getElementById('xpath-input');
+        dom.runXpathBtn = document.getElementById('run-xpath-btn');
+      }
+
+      // Helper functions
+      function parseXmlText(xmlText) {
+        const parser = new DOMParser();
+        return parser.parseFromString(xmlText, 'text/xml');
+      }
+
+      function textOf(parent, tagName) {
+        const el = parent.getElementsByTagName(tagName)[0];
+        return el && el.textContent ? el.textContent.trim() : '';
+      }
+
+      function showError(message, status, url) {
+        State.ui.error = { message, status, url };
+        renderErrorBanner();
+      }
+
+      function clearError() {
+        State.ui.error = null;
+        renderErrorBanner();
+      }
+
+      function normalizeContentNode(el) {
+        const tag = el.tagName.toLowerCase();
+        let type = 'index';
+        if (tag === 'dir') type = 'dir';
+        if (tag === 'document') type = 'document';
+        const id =
+          el.getAttribute('CIVIX_DOCUMENT_ID') ||
+          el.getAttribute('CIVIX_INDEX_ID') ||
+          el.getAttribute('ID') ||
+          el.getAttribute('id') ||
+          el.textContent.trim();
+        const title =
+          el.getAttribute('CIVIX_DOCUMENT_TITLE') ||
+          el.textContent.trim() ||
+          id;
+        const indexId = el.getAttribute('CIVIX_INDEX_ID') || null;
+        const visibleAttr = el.getAttribute('CIVIX_DOCUMENT_VISIBLE');
+        const visible = visibleAttr !== 'false';
+        return { id, type, title, indexId, visible, childrenLoaded: false };
+      }
+
+      function parseContentXml(xmlText) {
+        const doc = parseXmlText(xmlText);
+        const root = doc.documentElement;
+        const nodes = [];
+        Array.from(root.children).forEach((el) => {
+          const tag = el.tagName.toLowerCase();
+          if (tag !== 'index' && tag !== 'dir' && tag !== 'document') return;
+          const node = normalizeContentNode(el);
+          if (node.visible && node.id) nodes.push(node);
+        });
+        if (!nodes.length) {
+          root.querySelectorAll('index, dir, document').forEach((el) => {
+            const node = normalizeContentNode(el);
+            if (node.visible && node.id) nodes.push(node);
+          });
+        }
+        return nodes;
+      }
+
+      function parseSearchXml(xmlText) {
+        const doc = parseXmlText(xmlText);
+        const result = [];
+        const docs = doc.getElementsByTagName('doc');
+        for (let i = 0; i < docs.length; i++) {
+          const el = docs[i];
+          const docId = textOf(el, 'CIVIX_DOCUMENT_ID');
+          const indexId = textOf(el, 'CIVIX_INDEX_ID');
+          const title = textOf(el, 'CIVIX_DOCUMENT_TITLE') || docId || '';
+          const type = textOf(el, 'CIVIX_DOCUMENT_TYPE') || '';
+          const fragEls = el.getElementsByTagName('frag');
+          const frags = [];
+          for (let j = 0; j < fragEls.length; j++) {
+            const f = fragEls[j];
+            if (typeof f.innerHTML === 'string') {
+              frags.push(f.innerHTML);
+            } else {
+              frags.push(f.textContent || '');
+            }
+          }
+          result.push({ title, docId, indexId, type, frags });
+        }
+        return result;
+      }
+
+      // API calls
+      const API_BASE = 'https://www.bclaws.gov.bc.ca';
+
+      async function apiFetch(path) {
+        const url = API_BASE + path;
+        try {
+          const res = await fetch(url, { method: 'GET' });
+          if (!res.ok) {
+            const text = await res.text().catch(() => '');
+            const err = new Error(`HTTP ${res.status} ${res.statusText}`);
+            err.status = res.status;
+            err.statusText = res.statusText;
+            err.url = url;
+            err.body = text.slice(0, 300);
+            throw err;
+          }
+          return res;
+        } catch (e) {
+          if (
+            e instanceof TypeError &&
+            window.location &&
+            window.location.protocol === 'file:'
+          ) {
+            const err = new Error(
+              'CORS error: please serve this file from a web server instead of opening it directly.'
+            );
+            err.url = url;
+            throw err;
+          }
+          if (!e.url) {
+            e.url = url;
+          }
+          throw e;
+        }
+      }
+
+      async function getContentRoot(aspect) {
+        const asp = aspect || 'complete';
+        const path = `/civix/content/${encodeURIComponent(asp)}/`;
+        const res = await apiFetch(path);
+        return res.text();
+      }
+
+      async function getContentChildren(aspect, documentId) {
+        const asp = aspect || 'complete';
+        const path = `/civix/content/${encodeURIComponent(asp)}/${encodeURIComponent(documentId)}/`;
+        const res = await apiFetch(path);
+        return res.text();
+      }
+
+      async function getDocumentHtml(aspect, indexId, documentId) {
+        const asp = aspect || 'complete';
+        const path = `/civix/document/id/${encodeURIComponent(asp)}/${encodeURIComponent(indexId)}/${encodeURIComponent(documentId)}`;
+        const res = await apiFetch(path);
+        return res.text();
+      }
+
+      async function getDocumentXml(aspect, indexId, documentId) {
+        const asp = aspect || 'complete';
+        const path = `/civix/document/id/${encodeURIComponent(asp)}/${encodeURIComponent(indexId)}/${encodeURIComponent(documentId)}/xml`;
+        const res = await apiFetch(path);
+        return res.text();
+      }
+
+      async function runXpath(aspect, indexId, documentId, expr) {
+        const asp = aspect || 'complete';
+        const encodedExpr = encodeURIComponent(expr);
+        const path = `/civix/document/id/${encodeURIComponent(asp)}/${encodeURIComponent(indexId)}/${encodeURIComponent(documentId)}/xml/xpath/${encodedExpr}`;
+        const res = await apiFetch(path);
+        return res.text();
+      }
+
+      async function searchFulltext(aspect, q) {
+        const asp = aspect || 'complete';
+        const params = new URLSearchParams({ q, s: '0', e: '20', nFrag: '3', lFrag: '120' });
+        const path = `/civix/search/${encodeURIComponent(asp)}/fullsearch?${params.toString()}`;
+        const res = await apiFetch(path);
+        return res.text();
+      }
+
+      // Local storage helpers for tags and notes
+      function loadTagsFromStorage() {
+        try {
+          const data = localStorage.getItem('bcw_tags');
+          if (data) {
+            State.tags = JSON.parse(data);
+          }
+        } catch (e) {
+          console.warn('Failed to parse tags from storage', e);
+        }
+      }
+
+      function saveTagsToStorage() {
+        try {
+          localStorage.setItem('bcw_tags', JSON.stringify(State.tags));
+        } catch (e) {
+          console.warn('Failed to save tags to storage', e);
+        }
+      }
+
+      function loadNotesFromStorage() {
+        try {
+          const text = localStorage.getItem('bcw_notes');
+          if (text) {
+            State.notes = text;
+            dom.notesInput.value = State.notes;
+          }
+        } catch (e) {}
+      }
+
+      function saveNotesToStorage() {
+        try {
+          localStorage.setItem('bcw_notes', State.notes);
+        } catch (e) {}
+      }
+
+      function loadOpenAIKey() {
+        try {
+          const key = localStorage.getItem('bcw_openai_key');
+          if (key) {
+            State.openaiKey = key;
+            dom.openaiKeyInput.value = key;
+          }
+        } catch (e) {}
+      }
+
+      function saveOpenAIKey() {
+        if (State.openaiKey) {
+          try {
+            localStorage.setItem('bcw_openai_key', State.openaiKey);
+          } catch (e) {}
+        }
+      }
+
+      // Rendering functions
+      function renderErrorBanner() {
+        const err = State.ui.error;
+        if (!err) {
+          dom.errorBanner.classList.remove('visible');
+          dom.errorMessage.textContent = '';
+          return;
+        }
+        dom.errorMessage.textContent = err.message || 'An error occurred.';
+        dom.errorBanner.classList.add('visible');
+      }
+
+      function renderBreadcrumb() {
+        const docLabel = State.activeDocumentId || 'None';
+        dom.breadcrumb.textContent = `Aspect: ${State.aspect} | Index: ${State.indexId} | Document: ${docLabel}`;
+      }
+
+      function renderTabs() {
+        dom.tabButtons.forEach((btn) => {
+          const tab = btn.getAttribute('data-tab');
+          if (tab === State.ui.currentTab) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+        dom.tabPanels.forEach((panel) => {
+          const tab = panel.getAttribute('data-tab');
+          if (tab === State.ui.currentTab) {
+            panel.classList.add('active');
+          } else {
+            panel.classList.remove('active');
+          }
+        });
+      }
+
+      function renderContentTree() {
+        const aspect = State.aspect;
+        const cache = State.contentCache[aspect] || {};
+        const rootNodes = cache['root'] || [];
+        dom.contentTree.innerHTML = '';
+        if (State.ui.loading.content && !rootNodes.length) {
+          const p = document.createElement('p');
+          p.textContent = 'Loading content tree…';
+          p.className = 'muted small';
+          dom.contentTree.appendChild(p);
+          return;
+        }
+        if (!rootNodes.length) {
+          const p = document.createElement('p');
+          p.textContent = 'No content available. Try another aspect or reload.';
+          p.className = 'muted small';
+          dom.contentTree.appendChild(p);
+          return;
+        }
+        const ul = document.createElement('ul');
+        ul.className = 'tree-root';
+        rootNodes.forEach((node) => ul.appendChild(renderTreeNode(node, 0)));
+        dom.contentTree.appendChild(ul);
+      }
+
+      function renderTreeNode(node, depth) {
+        const li = document.createElement('li');
+        li.className = `tree-node ${node.type}`;
+        if (State.selectedNodeId === node.id) {
+          li.classList.add('selected');
+        }
+        const row = document.createElement('div');
+        row.className = 'tree-node-row';
+        row.style.paddingLeft = `${depth * 12 + 8}px`;
+        const icon = document.createElement('span');
+        icon.className = 'tree-icon';
+        icon.textContent = node.type === 'document' ? '📄' : '📁';
+        row.appendChild(icon);
+        if ((node.type === 'index' || node.type === 'dir') && State.ui.loadingNodeId === node.id) {
+          const spin = document.createElement('span');
+          spin.className = 'spinner';
+          row.appendChild(spin);
+        }
+        const label = document.createElement('span');
+        label.className = 'tree-label';
+        label.textContent = node.title;
+        row.appendChild(label);
+        if (node.indexId) {
+          const badge = document.createElement('span');
+          badge.className = 'index-badge';
+          badge.textContent = node.indexId;
+          row.appendChild(badge);
+        }
+        row.title = `${node.title}\nType: ${node.type}${node.indexId ? '\nIndex: ' + node.indexId : ''}`;
+        row.addEventListener('click', () => {
+          if (node.type === 'document') {
+            State.selectedNodeId = node.id;
+            loadDocument(node.indexId || State.indexId, node.id, node.title);
+          } else {
+            toggleTreeNode(node);
+          }
+        });
+        li.appendChild(row);
+        if ((node.type === 'index' || node.type === 'dir') && State.expandedNodes.has(node.id)) {
+          const aspect = State.aspect;
+          const children = (State.contentCache[aspect] && State.contentCache[aspect][node.id]) || [];
+          const childList = document.createElement('ul');
+          childList.className = 'tree-children';
+          children.forEach((child) => childList.appendChild(renderTreeNode(child, depth + 1)));
+          li.appendChild(childList);
+        }
+        return li;
+      }
+
+      function renderDocumentTab() {
+        const meta = State.activeDocumentMeta;
+        if (!meta) {
+          dom.documentTitle.textContent = 'No document selected';
+          dom.documentMeta.textContent = 'Select a document to begin.';
+          dom.documentUrl.textContent = '';
+          dom.backButton.disabled = true;
+          dom.copyCitationBtn.disabled = true;
+          dom.toggleTagModeBtn.disabled = true;
+          dom.openXmlBtn.disabled = true;
+          if (!State.ui.loading.document) {
+            dom.documentBody.innerHTML = '<p class="muted small">Open a document to read its contents here.</p>';
+          } else {
+            dom.documentBody.innerHTML = '<p class="muted small">Loading document…</p>';
+          }
+          return;
+        }
+        dom.documentTitle.textContent = meta.CIVIX_DOCUMENT_TITLE || meta.CIVIX_DOCUMENT_ID || 'Document';
+        dom.documentMeta.textContent = `Aspect: ${State.aspect} | Index: ${meta.CIVIX_INDEX_ID || State.indexId} | Document: ${meta.CIVIX_DOCUMENT_ID}`;
+        dom.documentUrl.textContent = `/civix/document/id/${State.aspect}/${meta.CIVIX_INDEX_ID}/${meta.CIVIX_DOCUMENT_ID}`;
+        dom.backButton.disabled = State.history.length === 0;
+        dom.copyCitationBtn.disabled = false;
+        dom.toggleTagModeBtn.disabled = false;
+        dom.openXmlBtn.disabled = false;
+        if (State.ui.loading.document) {
+          dom.documentBody.innerHTML = '<p class="muted small">Loading document…</p>';
+        } else if (State.activeDocumentHtml) {
+          dom.documentBody.innerHTML = State.activeDocumentHtml;
+          enhanceDocumentForTagging();
+        } else {
+          dom.documentBody.innerHTML = '<p class="muted small">Unable to load document.</p>';
+        }
+      }
+
+      function renderSearchResults() {
+        const container = dom.searchResults;
+        container.innerHTML = '';
+        if (State.ui.loading.search) {
+          const p = document.createElement('p');
+          p.textContent = 'Searching…';
+          p.className = 'muted small';
+          container.appendChild(p);
+          return;
+        }
+        if (!State.searchResults.length) {
+          const p = document.createElement('p');
+          p.textContent = 'No results. Try another search.';
+          p.className = 'muted small';
+          container.appendChild(p);
+          return;
+        }
+        State.searchResults.forEach((res) => {
+          const card = document.createElement('article');
+          card.className = 'search-result-card';
+          const titleEl = document.createElement('h3');
+          titleEl.textContent = res.title || res.docId || '(Untitled)';
+          card.appendChild(titleEl);
+          const meta = document.createElement('div');
+          meta.className = 'search-result-meta';
+          meta.textContent = [res.type ? `Type: ${res.type}` : null, res.indexId ? `Index: ${res.indexId}` : null, res.docId ? `ID: ${res.docId}` : null].filter(Boolean).join(' | ');
+          card.appendChild(meta);
+          const fragWrapper = document.createElement('div');
+          fragWrapper.className = 'fragments';
+          res.frags.forEach((frag) => {
+            const f = document.createElement('div');
+            f.className = 'fragment';
+            f.innerHTML = frag;
+            fragWrapper.appendChild(f);
+          });
+          card.appendChild(fragWrapper);
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.textContent = 'Open';
+          btn.addEventListener('click', () => {
+            loadDocument(res.indexId || State.indexId, res.docId, res.title || res.docId);
+            State.ui.currentTab = 'browse';
+            renderTabs();
+          });
+          card.appendChild(btn);
+          container.appendChild(card);
+        });
+      }
+
+      function renderTagsTable() {
+        const table = dom.tagsTable;
+        table.innerHTML = '';
+        const header = document.createElement('tr');
+        ['Act', 'Citation', 'Snippet', 'Tags', 'Note', 'Actions'].forEach((h) => {
+          const th = document.createElement('th');
+          th.textContent = h;
+          header.appendChild(th);
+        });
+        table.appendChild(header);
+        const filterAct = dom.filterAct.value.trim().toLowerCase();
+        const filterTag = dom.filterTag.value.trim().toLowerCase();
+        let filtered = State.tags;
+        if (filterAct) {
+          filtered = filtered.filter((r) => r.actTitle.toLowerCase().includes(filterAct));
+        }
+        if (filterTag) {
+          filtered = filtered.filter((r) => r.tags.some((t) => t.toLowerCase().includes(filterTag)));
+        }
+        if (!filtered.length) {
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
+          cell.colSpan = 6;
+          cell.className = 'muted';
+          cell.textContent = 'No tags found.';
+          row.appendChild(cell);
+          table.appendChild(row);
+        } else {
+          filtered.forEach((rec) => {
+            const tr = document.createElement('tr');
+            function td(text) {
+              const cell = document.createElement('td');
+              cell.textContent = text;
+              return cell;
+            }
+            tr.appendChild(td(rec.actTitle));
+            tr.appendChild(td(rec.citation));
+            tr.appendChild(td(rec.snippet.length > 80 ? rec.snippet.slice(0, 80) + '…' : rec.snippet));
+            tr.appendChild(td(rec.tags.join('; ')));
+            tr.appendChild(td(rec.note || ''));
+            const actions = document.createElement('td');
+            const openBtn = document.createElement('button');
+            openBtn.type = 'button';
+            openBtn.className = 'small-button';
+            openBtn.textContent = 'Open';
+            openBtn.addEventListener('click', () => {
+              loadDocument(rec.indexId, rec.actId, rec.actTitle, rec.anchorId);
+              State.ui.currentTab = 'browse';
+              renderTabs();
+            });
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'small-button';
+            delBtn.textContent = 'Delete';
+            delBtn.style.background = '#b91c1c';
+            delBtn.addEventListener('click', () => {
+              State.tags = State.tags.filter((t) => t.id !== rec.id);
+              saveTagsToStorage();
+              renderTagsTable();
+              updateTagControls();
+            });
+            actions.appendChild(openBtn);
+            actions.appendChild(delBtn);
+            tr.appendChild(actions);
+            table.appendChild(tr);
+          });
+        }
+      }
+
+      function updateTagControls() {
+        const hasTags = State.tags.length > 0;
+        dom.exportCsvBtn.disabled = !hasTags;
+        dom.exportWordBtn.disabled = !hasTags;
+        dom.clearTagsBtn.disabled = !hasTags;
+      }
+
+      function renderNotes() {
+        dom.notesInput.value = State.notes;
+      }
+
+      function enhanceDocumentForTagging() {
+        // Inspect the inserted HTML for headings that may represent sections
+        // Add a small tag button next to them
+        const body = dom.documentBody;
+        const headings = body.querySelectorAll('h1, h2, h3, h4');
+        headings.forEach((h) => {
+          if (h.dataset.tagEnhanced) return;
+          const text = h.textContent.trim();
+          let sectionNumber = null;
+          const match = text.match(/Section\s+(\d+[A-Za-z]*)/i);
+          if (match) {
+            sectionNumber = match[1];
+          } else {
+            const m2 = text.match(/^(\d+[A-Za-z]*)/);
+            if (m2) sectionNumber = m2[1];
+          }
+          if (!h.id) {
+            h.id = sectionNumber ? 's' + sectionNumber : 'sec' + Math.random().toString(36).slice(2, 7);
+          }
+          const tagBtn = document.createElement('button');
+          tagBtn.type = 'button';
+          tagBtn.className = 'small-button';
+          tagBtn.textContent = 'Tag';
+          tagBtn.style.marginLeft = '8px';
+          tagBtn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            const selection = window.getSelection();
+            const snippet = selection && selection.toString().trim() ? selection.toString().trim() : (h.nextElementSibling ? h.nextElementSibling.textContent.trim().slice(0, 500) : h.textContent.trim());
+            openTagDialog({
+              actTitle: State.activeDocumentMeta.CIVIX_DOCUMENT_TITLE,
+              actId: State.activeDocumentMeta.CIVIX_DOCUMENT_ID,
+              indexId: State.activeDocumentMeta.CIVIX_INDEX_ID,
+              sectionNumber: sectionNumber || h.textContent.trim(),
+              anchorId: h.id,
+              snippet,
+            });
+          });
+          h.appendChild(tagBtn);
+          h.dataset.tagEnhanced = 'true';
+        });
+      }
+
+      // Tag dialog handling
+      let currentTagInfo = null;
+      function openTagDialog(info) {
+        currentTagInfo = info;
+        dom.tagDialogInfo.textContent = `${info.actTitle}, Section ${info.sectionNumber}`;
+        dom.tagInput.value = '';
+        dom.noteInput.value = '';
+        dom.tagModal.classList.add('visible');
+        dom.tagModal.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeTagDialog() {
+        dom.tagModal.classList.remove('visible');
+        dom.tagModal.setAttribute('aria-hidden', 'true');
+        currentTagInfo = null;
+      }
+
+      function saveTagRecord(tags, note) {
+        if (!currentTagInfo) return;
+        const rec = {
+          id: 'tag_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          actTitle: currentTagInfo.actTitle,
+          actId: currentTagInfo.actId,
+          indexId: currentTagInfo.indexId,
+          sectionNumber: currentTagInfo.sectionNumber,
+          anchorId: currentTagInfo.anchorId,
+          citation: `${currentTagInfo.actTitle}, s. ${currentTagInfo.sectionNumber}`,
+          snippet: currentTagInfo.snippet,
+          tags: tags,
+          note: note,
+          createdAt: new Date().toISOString(),
+        };
+        State.tags.push(rec);
+        saveTagsToStorage();
+        renderTagsTable();
+        updateTagControls();
+        closeTagDialog();
+      }
+
+      // Event bindings
+      function bindEvents() {
+        dom.aspectSelect.addEventListener('change', () => {
+          const newAspect = dom.aspectSelect.value;
+          if (newAspect !== State.aspect) {
+            State.aspect = newAspect;
+            State.activeDocumentId = null;
+            State.selectedNodeId = null;
+            State.expandedNodes.clear();
+            State.contentCache[newAspect] = State.contentCache[newAspect] || {};
+            loadContentRoot();
+          }
+          renderBreadcrumb();
+        });
+        dom.indexInput.addEventListener('blur', () => {
+          const value = dom.indexInput.value.trim();
+          State.indexId = value || 'statreg';
+          dom.indexInput.value = State.indexId;
+          renderBreadcrumb();
+        });
+        dom.openaiKeyInput.addEventListener('blur', () => {
+          const key = dom.openaiKeyInput.value.trim();
+          if (key) {
+            State.openaiKey = key;
+            saveOpenAIKey();
+          }
+        });
+        dom.aboutButton.addEventListener('click', () => {
+          dom.aboutModal.classList.add('visible');
+          dom.aboutModal.setAttribute('aria-hidden', 'false');
+        });
+        dom.aboutModal.addEventListener('click', (e) => {
+          if (e.target === dom.aboutModal || e.target.classList.contains('modal-close')) {
+            dom.aboutModal.classList.remove('visible');
+            dom.aboutModal.setAttribute('aria-hidden', 'true');
+          }
+        });
+        dom.tagModal.addEventListener('click', (e) => {
+          if (e.target === dom.tagModal || e.target.classList.contains('modal-close')) {
+            closeTagDialog();
+          }
+        });
+        dom.tagForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const rawTags = dom.tagInput.value
+            .split(',')
+            .map((t) => t.trim())
+            .filter((t) => t);
+          const note = dom.noteInput.value.trim();
+          saveTagRecord(rawTags, note);
+        });
+        dom.tagCancelBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          closeTagDialog();
+        });
+        dom.errorDismiss.addEventListener('click', clearError);
+        dom.tabButtons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const tab = btn.getAttribute('data-tab');
+            State.ui.currentTab = tab;
+            renderTabs();
+            if (tab === 'technical') {
+              renderTechnicalTab();
+            }
+          });
+        });
+        dom.backButton.addEventListener('click', () => {
+          if (State.history.length > 0) {
+            const prev = State.history.pop();
+            loadDocument(prev.indexId, prev.docId, prev.title, prev.anchorId, false);
+          }
+        });
+        dom.copyCitationBtn.addEventListener('click', () => {
+          if (!State.activeDocumentMeta) return;
+          const citation = `${State.activeDocumentMeta.CIVIX_DOCUMENT_TITLE}, s. ${State.activeDocumentMeta.CIVIX_DOCUMENT_ID}`;
+          navigator.clipboard.writeText(citation).then(() => {
+            showError('Citation copied to clipboard.', null, null);
+            setTimeout(clearError, 2000);
+          });
+        });
+        dom.openXmlBtn.addEventListener('click', () => {
+          if (!State.activeDocumentId) return;
+          State.ui.currentTab = 'technical';
+          renderTabs();
+          loadXml();
+        });
+        dom.searchBtn.addEventListener('click', () => {
+          performSearch();
+        });
+        dom.applyFilterBtn.addEventListener('click', () => {
+          renderTagsTable();
+        });
+        dom.clearFilterBtn.addEventListener('click', () => {
+          dom.filterAct.value = '';
+          dom.filterTag.value = '';
+          renderTagsTable();
+        });
+        dom.exportCsvBtn.addEventListener('click', () => {
+          exportTagsToCsv();
+        });
+        dom.exportWordBtn.addEventListener('click', () => {
+          exportTagsToWord();
+        });
+        dom.clearTagsBtn.addEventListener('click', () => {
+          if (confirm('Are you sure you want to clear all tags?')) {
+            State.tags = [];
+            saveTagsToStorage();
+            renderTagsTable();
+            updateTagControls();
+          }
+        });
+        dom.notesInput.addEventListener('input', () => {
+          State.notes = dom.notesInput.value;
+          saveNotesToStorage();
+        });
+        dom.downloadNotesBtn.addEventListener('click', () => {
+          const blob = new Blob([dom.notesInput.value], { type: 'text/plain' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'notes.txt';
+          a.click();
+          URL.revokeObjectURL(url);
+        });
+        dom.clearNotesBtn.addEventListener('click', () => {
+          if (confirm('Clear all notes?')) {
+            State.notes = '';
+            dom.notesInput.value = '';
+            saveNotesToStorage();
+          }
+        });
+        dom.assistantSendBtn.addEventListener('click', () => {
+          runAssistant();
+        });
+        dom.assistantInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            runAssistant();
+          }
+        });
+        dom.runXpathBtn.addEventListener('click', () => {
+          const expr = dom.xpathInput.value.trim();
+          if (expr) runXPathQuery(expr);
+        });
+      }
+
+      // Content tree operations
+      async function loadContentRoot() {
+        const aspect = State.aspect;
+        if (!State.contentCache[aspect]) {
+          State.contentCache[aspect] = {};
+        }
+        if (State.contentCache[aspect]['root']) {
+          renderContentTree();
+          return;
+        }
+        State.ui.loading.content = true;
+        renderContentTree();
+        try {
+          const xmlText = await getContentRoot(aspect);
+          const nodes = parseContentXml(xmlText);
+          State.contentCache[aspect]['root'] = nodes;
+        } catch (err) {
+          showError(err.message, err.status, err.url);
+        } finally {
+          State.ui.loading.content = false;
+          renderContentTree();
+        }
+      }
+
+      async function toggleTreeNode(node) {
+        const aspect = State.aspect;
+        if (!State.contentCache[aspect]) {
+          State.contentCache[aspect] = {};
+        }
+        if (State.expandedNodes.has(node.id)) {
+          State.expandedNodes.delete(node.id);
+          renderContentTree();
+          return;
+        }
+        State.expandedNodes.add(node.id);
+        if (State.contentCache[aspect][node.id]) {
+          renderContentTree();
+          return;
+        }
+        State.ui.loading.content = true;
+        State.ui.loadingNodeId = node.id;
+        renderContentTree();
+        try {
+          const xmlText = await getContentChildren(aspect, node.id);
+          const children = parseContentXml(xmlText);
+          State.contentCache[aspect][node.id] = children;
+        } catch (err) {
+          showError(err.message, err.status, err.url);
+        } finally {
+          State.ui.loading.content = false;
+          State.ui.loadingNodeId = null;
+          renderContentTree();
+        }
+      }
+
+      async function loadDocument(indexId, docId, title, anchorId, pushHistory = true) {
+        if (!docId) return;
+        if (State.activeDocumentId && pushHistory) {
+          State.history.push({ indexId: State.indexId, docId: State.activeDocumentId, title: State.activeDocumentMeta?.CIVIX_DOCUMENT_TITLE, anchorId: null });
+        }
+        State.activeDocumentId = docId;
+        State.indexId = indexId;
+        State.activeDocumentMeta = {
+          CIVIX_DOCUMENT_TITLE: title || docId,
+          CIVIX_DOCUMENT_TYPE: 'document',
+          CIVIX_INDEX_ID: indexId,
+          CIVIX_DOCUMENT_ID: docId,
+        };
+        State.activeDocumentHtml = '';
+        State.ui.loading.document = true;
+        renderDocumentTab();
+        renderBreadcrumb();
+        try {
+          const html = await getDocumentHtml(State.aspect, indexId, docId);
+          State.activeDocumentHtml = html;
+        } catch (err) {
+          showError(err.message, err.status, err.url);
+        } finally {
+          State.ui.loading.document = false;
+          renderDocumentTab();
+          if (anchorId) {
+            setTimeout(() => {
+              const anchorEl = document.getElementById(anchorId);
+              if (anchorEl) {
+                anchorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 200);
+          }
+        }
+      }
+
+      async function loadXml() {
+        if (!State.activeDocumentId) return;
+        const key = `${State.aspect}:${State.indexId}:${State.activeDocumentId}`;
+        dom.technicalXmlUrl.textContent = `/civix/document/id/${State.aspect}/${State.indexId}/${State.activeDocumentId}/xml`;
+        if (State.xmlCache[key]) {
+          dom.technicalXmlContent.textContent = State.xmlCache[key];
+          return;
+        }
+        State.ui.loading.xml = true;
+        dom.technicalXmlContent.textContent = 'Loading XML…';
+        try {
+          const xml = await getDocumentXml(State.aspect, State.indexId, State.activeDocumentId);
+          State.xmlCache[key] = xml;
+          dom.technicalXmlContent.textContent = xml;
+        } catch (err) {
+          showError(err.message, err.status, err.url);
+        } finally {
+          State.ui.loading.xml = false;
+        }
+      }
+
+      async function runXPathQuery(expr) {
+        if (!State.activeDocumentId) return;
+        dom.technicalXpathUrl.textContent = `/civix/document/id/${State.aspect}/${State.indexId}/${State.activeDocumentId}/xml/xpath/${encodeURIComponent(expr)}`;
+        State.ui.loading.xpath = true;
+        dom.technicalXpathResult.textContent = 'Running XPath…';
+        try {
+          const result = await runXpath(State.aspect, State.indexId, State.activeDocumentId, expr);
+          dom.technicalXpathResult.textContent = result;
+        } catch (err) {
+          showError(err.message, err.status, err.url);
+        } finally {
+          State.ui.loading.xpath = false;
+        }
+      }
+
+      async function performSearch() {
+        const query = dom.searchQuery.value.trim();
+        if (!query) {
+          showError('Please enter search keywords.', null, null);
+          setTimeout(clearError, 2000);
+          return;
+        }
+        const aspect = dom.searchAspect.value || State.aspect;
+        if (aspect !== State.aspect) {
+          State.aspect = aspect;
+          loadContentRoot();
+          renderBreadcrumb();
+        }
+        State.ui.loading.search = true;
+        renderSearchResults();
+        try {
+          const xml = await searchFulltext(State.aspect, query);
+          const results = parseSearchXml(xml);
+          State.searchResults = results;
+        } catch (err) {
+          showError(err.message, err.status, err.url);
+        } finally {
+          State.ui.loading.search = false;
+          renderSearchResults();
+        }
+      }
+
+      function renderTechnicalTab() {
+        if (State.activeDocumentId) {
+          dom.technicalXmlUrl.textContent = `/civix/document/id/${State.aspect}/${State.indexId}/${State.activeDocumentId}/xml`;
+        }
+      }
+
+      // Export functions
+      function exportTagsToCsv() {
+        const lines = [];
+        lines.push(['ActTitle', 'Citation', 'SectionNumber', 'SubsectionPath', 'Snippet', 'Tags', 'Note', 'CreatedAt'].join(','));
+        State.tags.forEach((rec) => {
+          const row = [
+            rec.actTitle.replace(/"/g, '""'),
+            rec.citation.replace(/"/g, '""'),
+            rec.sectionNumber.replace(/"/g, '""'),
+            rec.anchorId || '',
+            rec.snippet.replace(/"/g, '""'),
+            rec.tags.join('; ').replace(/"/g, '""'),
+            (rec.note || '').replace(/"/g, '""'),
+            rec.createdAt,
+          ].map((v) => '"' + v + '"').join(',');
+          lines.push(row);
+        });
+        const csv = lines.join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'tags.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function exportTagsToWord() {
+        let rtf = '{\\rtf1\\ansi\n';
+        rtf += '{\\b Legislative Excerpts Research Export}\\par\n\\par\n';
+        const grouped = {};
+        State.tags.forEach((rec) => {
+          if (!grouped[rec.actTitle]) grouped[rec.actTitle] = [];
+          grouped[rec.actTitle].push(rec);
+        });
+        Object.keys(grouped).forEach((act) => {
+          rtf += '{\\b ' + act.replace(/\\/g, '\\') + '}\\par\n';
+          grouped[act].forEach((rec) => {
+            rtf += '{\\b ' + rec.citation.replace(/\\/g, '\\') + '}\\par\n';
+            rtf += rec.snippet.replace(/\\/g, '\\').replace(/\n/g, '\\par ') + '\\par\n';
+            if (rec.tags && rec.tags.length) {
+              rtf += 'Tags: ' + rec.tags.join(', ').replace(/\\/g, '\\') + '\\par\n';
+            }
+            if (rec.note) {
+              rtf += 'Note: ' + rec.note.replace(/\\/g, '\\') + '\\par\n';
+            }
+            rtf += '\\par\n';
+          });
+        });
+        rtf += '}';
+        const blob = new Blob([rtf], { type: 'application/rtf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'tags_export.rtf';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      // AI Assistant integration
+      async function runAssistant() {
+        const input = dom.assistantInput.value.trim();
+        if (!input) return;
+        if (!State.openaiKey) {
+          showError('Please provide a valid OpenAI API key in the header.', null, null);
+          setTimeout(clearError, 2000);
+          return;
+        }
+        appendChatMessage('user', input);
+        dom.assistantInput.value = '';
+        State.ui.loading.assistant = true;
+        try {
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + State.openaiKey,
+            },
+            body: JSON.stringify({
+              model: 'gpt-4o-mini',
+              messages: [
+                { role: 'system', content: 'You are a helpful assistant specialized in summarizing and explaining BC legislation. Always remind users to verify with official sources.' },
+                { role: 'user', content: input },
+              ],
+              max_tokens: 256,
+            }),
+          });
+          if (!response.ok) {
+            const msg = await response.text();
+            throw new Error(`OpenAI API error: ${response.status} ${msg}`);
+          }
+          const data = await response.json();
+          const reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content ? data.choices[0].message.content.trim() : 'No response';
+          appendChatMessage('assistant', reply);
+        } catch (err) {
+          showError(err.message, null, null);
+        } finally {
+          State.ui.loading.assistant = false;
+        }
+      }
+
+      function appendChatMessage(role, text) {
+        const msg = document.createElement('div');
+        msg.className = `chat-message ${role}`;
+        msg.textContent = text;
+        dom.assistantChat.appendChild(msg);
+        dom.assistantChat.scrollTop = dom.assistantChat.scrollHeight;
+      }
+
+      // Initialisation
+      function init() {
+        cacheDom();
+        loadTagsFromStorage();
+        loadNotesFromStorage();
+        loadOpenAIKey();
+        bindEvents();
+        render();
+        loadContentRoot();
+      }
+
+      function render() {
+        renderErrorBanner();
+        renderBreadcrumb();
+        renderTabs();
+        renderContentTree();
+        renderDocumentTab();
+        renderSearchResults();
+        renderTagsTable();
+        updateTagControls();
+        renderNotes();
+      }
+
+      document.addEventListener('DOMContentLoaded', init);
+    })();
+  </script>
+</body>
+</html>
